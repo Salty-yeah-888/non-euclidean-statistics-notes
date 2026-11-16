@@ -171,10 +171,7 @@ d(x,z)\leq d(x,y)+d(y,z)
 普通欧氏样本均值可以表示为：
 
 $$
-\bar{X}
-=
-\underset{\mu \in \mathbb{R}^p}{\operatorname{arg\,min}}
-\sum_{i=1}^{n}\|X_i-\mu\|^2
+\bar{X} = \frac{1}{n}\sum_{i=1}^{n}X_i
 $$
 
 这个表达启发了 Fréchet mean。
