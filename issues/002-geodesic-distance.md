@@ -1,86 +1,58 @@
 
-# 第 002 期｜距离、测地线与 Fréchet 均值的统计理论
+# 第 002 期｜距离、测地线与非欧重心估计
 
 > Non-Euclidean Statistics · Learning & Research Notes
 
 **日期：** 2026-11-17  
-**主题：** Metric Geometry, Geodesics & Barycenter Estimation  
-**关键词：** Geodesic Distance、CAT Spaces、Fréchet Mean、Statistical Barycenters
+**主题：** Geodesic Distance, Curvature & Barycenter Concentration 
+**关键词：** Geodesic Space、CAT(0)、Fréchet Mean、Barycenter、Concentration Inequality
 
 ---
 
 ## 本期导读
 
-本期继续采用基础知识与研究前沿并行的方式。
+第 001 期介绍了度量空间和 Fréchet mean。
 
-- **A. 基础课：** 欧氏距离、测地距离与测地空间。
-- **B. 前沿雷达：** 五项近期非欧统计研究。
-- **C. 核心精读：** 正曲率上界空间中的重心估计理论。
-- **D. 今日总结：** 理论联系、自测与后续学习。
+本期进一步研究：
 
-本期最重要的问题是：
+**距离和曲率如何影响 Fréchet mean 的存在性、唯一性以及统计估计误差？**
 
-**当数据空间具有曲率时，统计均值的存在性、唯一性以及估计误差会发生什么变化？**
+本期包含：
+
+- **A. 基础知识：** 欧氏距离、测地距离、测地空间与 CAT(0) 几何。
+- **B. 研究前沿：** 五项高质量经典、正式发表及精选预印本研究。
+- **C. 核心精读：** Concentration of empirical barycenters in metric spaces。
+- **D. 总结：** 理论联系、自测和下一期预告。
 
 ---
 
-# A. 基础知识：距离、测地线与统计均值
+# A. 基础知识：从距离走向测地几何
 
-## A.1 距离不一定是直线长度
+## A.1 欧氏距离与测地距离
 
-在第 001 期中，我们介绍了度量空间：
-
-```math
-(\Omega,d)
-```
-
-其中距离函数满足非负性、对称性和三角不等式。
-
-但是满足这些条件的距离不一定是普通欧氏距离。
-
-考虑两个位于球面上的点。
-
-如果只考虑它们在三维欧氏空间中的坐标，我们可以计算穿过球体内部的直线距离。
-
-但如果一个对象必须沿球面运动，例如沿地球表面移动，那么更自然的距离是球面上的最短路径长度。
-
-这就引出了两种不同的距离。
-
-### Euclidean Distance
-
-对于三维空间中的两点：
-
-```math
-x,y\in\mathbb R^3
-```
-
-欧氏距离为：
-
-```math
-d_E(x,y)
-=
-\sqrt{
-\sum_{j=1}^{3}(x_j-y_j)^2
-}
-```
-
-### Geodesic Distance
-
-对于单位球面：
+考虑单位球面：
 
 ```math
 S^2=\{x\in\mathbb R^3:\|x\|=1\}
 ```
 
+假设两个球面点 $x,y$。
+
+我们可以在三维空间中计算它们的普通欧氏距离：
+
+```math
+d_E(x,y)=\|x-y\|
+```
+
+但如果要求路径始终位于球面上，那么更自然的是测地距离。
+
 球面测地距离为：
 
 ```math
-d_G(x,y)
-=
-\arccos(x^\top y)
+d_G(x,y)=\arccos(x^\top y)
 ```
 
-其中 $x^\top y$ 是两个单位向量的内积。
+这里 $x,y$ 都是单位向量。
 
 对于半径为 $R$ 的球面：
 
@@ -90,53 +62,29 @@ d_G(x,y)
 R\arccos\left(\frac{x^\top y}{R^2}\right)
 ```
 
-这里的 $x,y$ 是模长为 $R$ 的三维向量。
+### 例子
 
-**直观理解：**
+假设单位球面上两个点的中心夹角为 90°。
 
-- 欧氏距离：连接两点的空间直线长度。
-- 球面测地距离：沿球面最短大圆弧的长度。
-
-### 一个简单例子
-
-在单位球面上，假设两个点对应的中心夹角是 90°。
-
-欧氏距离（弦长）为：
+它们之间的欧氏弦长为：
 
 ```math
 d_E=\sqrt{2}
 ```
 
-测地距离（弧长）为：
+但球面上最短大圆弧的长度为：
 
 ```math
 d_G=\frac{\pi}{2}
 ```
 
-两者不相等。
+因此：
 
-### 图 1：不同的数据结构对应不同距离
-
-```mermaid
-flowchart TD
-    A["两个观测对象"] --> B{"它们属于什么空间？"}
-
-    B --> C["欧氏向量空间"]
-    B --> D["球面"]
-    B --> E["一般度量空间"]
-
-    C --> F["Euclidean Distance"]
-    D --> G["Great-circle Distance"]
-    E --> H["由对象结构定义距离"]
-
-    F --> I["基于距离的统计估计"]
-    G --> I
-    H --> I
-
-    I --> J["Fréchet Mean / Regression"]
+```math
+d_E\neq d_G
 ```
 
-这张图展示的是距离选择的逻辑，而不是几何形状的精确绘图。
+这说明，即使是同一组数据，也可以依据不同的几何结构定义不同距离。
 
 ---
 
@@ -144,9 +92,7 @@ flowchart TD
 
 在欧氏空间中，连接两点的最短路径是直线段。
 
-在弯曲空间中，对应的概念是测地线。
-
-为了避免术语混淆，这里首先考虑**最短测地线段**。
+在一般度量空间中，对应的概念是最短测地线段。
 
 设：
 
@@ -154,15 +100,13 @@ flowchart TD
 \gamma:[0,1]\rightarrow\Omega
 ```
 
-是从 $x$ 到 $y$ 的一条曲线。
-
-如果满足：
+是一条连接 $x$ 和 $y$ 的曲线，并满足：
 
 ```math
 \gamma(0)=x,\qquad\gamma(1)=y
 ```
 
-并且：
+如果：
 
 ```math
 d(\gamma(s),\gamma(t))
@@ -172,561 +116,710 @@ d(\gamma(s),\gamma(t))
 
 对于所有 $s,t\in[0,1]$ 成立，那么 $\gamma$ 是一条常速最短测地线段。
 
-例如：
+### 常见例子
 
-- 欧氏空间：直线段；
-- 球面：较短的大圆弧；
-- 双曲空间：相应双曲模型中的测地曲线。
+| 空间 | 最短测地线 |
+|---|---|
+| 欧氏空间 | 直线段 |
+| 球面 | 较短的大圆弧 |
+| 双曲空间 | 双曲测地线 |
+| 度量树 | 唯一路径 |
 
-需要注意：一般黎曼几何中的测地线可以只在局部最短，不一定始终是全局最短路径。
+如果任意两点之间都存在最短测地线段，那么这个空间称为测地空间（Geodesic Space）。
 
-如果任意两点之间都存在这样的最短测地线段，我们称这个空间为测地空间（Geodesic Space）。
+注意：
 
-### 为什么测地线对统计学重要？
+- 最短测地线可能不唯一；
+- 在黎曼几何中，一条测地线可以局部最短，但不一定全局最短。
 
-因为非欧空间中的许多统计方法都需要在两个数据对象之间进行插值。
+---
 
-普通线性插值为：
+## A.3 测地空间中的插值
+
+欧氏空间中的线性插值为：
 
 ```math
 z(t)=(1-t)x+ty
 ```
 
-但在一般度量空间中，对象可能无法相加。
+其中：
 
-于是可以使用：
+```math
+0\leq t\leq1
+```
+
+但一般度量空间没有自然的向量加法。
+
+如果存在连接 $x,y$ 的测地线 $\gamma$，可以使用：
 
 ```math
 z(t)=\gamma(t)
 ```
 
-其中 $\gamma$ 是连接 $x,y$ 的测地线。
+实现几何插值。
 
-这提供了非欧空间中的一种自然插值方式。
+这对于非欧统计非常重要。
 
----
+例如：
 
-## A.3 测地距离与 Fréchet Mean
+- 流形上的回归曲线；
+- 概率分布之间的 Wasserstein 插值；
+- 正定矩阵之间的几何插值；
+- 测地均值计算。
 
-第 001 期中，我们学习了 Fréchet mean。
+### 图 1：从度量空间到统计估计
 
-对于随机对象 $X$，定义 Fréchet 风险：
-
-```math
-F_{\mu}(z)
-=
-\mathbb E[d^2(X,z)]
+```mermaid
+flowchart TD
+    A["度量空间"] --> B["距离函数"]
+    B --> C["测地线"]
+    C --> D["测地插值"]
+    B --> E["Fréchet 风险"]
+    D --> F["几何结构与曲率"]
+    E --> G["Fréchet Mean"]
+    F --> G
+    G --> H["一致性与统计误差分析"]
 ```
 
-总体 Fréchet mean 是使 $F_\mu$ 取得最小值的点。
-
-即：
-
-```math
-F_{\mu}(b)
-=
-\min_{z\in\Omega}F_{\mu}(z)
-```
-
-样本 Fréchet mean 为：
-
-```math
-\frac1n
-\sum_{i=1}^{n}d^2(X_i,\hat b_n)
-=
-\min_{z\in\Omega}
-\frac1n\sum_{i=1}^{n}d^2(X_i,z)
-```
-
-### 关键问题
-
-如果我们改变距离函数，那么最小化的目标函数也会变化。
-
-因此，Fréchet mean 可能随距离的选择而改变。
-
-例如，对于球面数据，可以考虑：
-
-- 使用三维欧氏弦距离，并约束均值仍在球面上；
-- 使用球面测地距离。
-
-这分别对应不同的外在（Extrinsic）与内在（Intrinsic）统计思想。
-
-它们的均值一般不一定相同。
-
 ---
 
-## A.4 一个重要现象：均值可能不唯一
+## A.4 曲率为什么重要？
 
-考虑球面上的两个对跖点，即位于球面正相反方向的两个点。
+曲率描述空间偏离欧氏几何的方式。
 
-如果使用球面测地距离，并且两个点具有相同权重，那么位于它们之间任意最短半圆路径中点的位置，都可以成为平方距离的最小化点。
+可以从三个典型模型直观理解。
 
-因此可能有多个 Fréchet mean。
-
-这个例子说明：
-
-**空间的几何结构会影响统计均值的唯一性。**
-
-这也直接引出了本期重点论文的研究问题。
-
----
-
-# B. 今日前沿研究雷达
-
-本期精选五项研究，涉及度量几何、方向统计、球面推断、黎曼回归和最优传输。
-
-这些论文不是全部在今天发表，而是截至本期检索时可以核验的近期研究成果。
-
-## B.1 Geometry and barycenters in large CAT(κ) spaces
-
-**作者：** Yassine Boukhateb, Victor-Emmanuel Brunel, Austin J. Stromme  
-**日期：** 2026-10-13  
-**类别：** arXiv 预印本  
-**原文：** https://arxiv.org/abs/2610.17909
-
-### 研究问题
-
-在具有正曲率上界的度量空间中，当 Fréchet 风险函数可能不再具有强测地凸性时，是否还能稳定地估计统计重心？
-
-### 核心贡献
-
-论文研究曲率上界为 $\kappa$ 的 CAT 空间。
-
-主要结果包括：
-
-- 建立新的几何稳定性不等式；
-- 研究 Fréchet mean 的存在性与唯一性；
-- 扩大能够建立统计估计误差界的空间区域；
-- 给出经验重心与迭代重心的有限样本误差保证；
-- 研究重心的稀疏表示和近似问题。
-
-### 统计学价值
-
-表明即使 Fréchet 风险函数不再具有传统的全局强测地凸性，在一定几何条件下仍可能获得良好的重心估计理论。
-
-**推荐度：高。**
-
----
-
-## B.2 Directional Statistics in Signal Processing: A Geometry Driven Overview of Models, Learning, and Applications
-
-**作者：** Anders S. Olsen, Kanti V. Mardia, Dimitri Van De Ville, Morten Mørup  
-**日期：** 2026-11-03  
-**类别：** arXiv 综述预印本  
-**原文：** https://arxiv.org/abs/2611.04595
-
-### 研究问题
-
-信号处理中存在许多具有方向性、周期性、符号等价性或者子空间约束的数据。
-
-如何根据数据的几何性质，选择合适的统计模型？
-
-### 核心内容
-
-论文讨论了：
-
-- Circular Statistics；
-- Spherical Statistics；
-- Projective Spaces；
-- Stiefel 和 Grassmann Manifolds；
-- Covariance-valued Data；
-- Geometry-aware Clustering。
-
-并通过神经影像和信号分离等例子，说明几何表示会影响统计建模的效果。
-
-### 统计学价值
-
-这篇综述特别适合建立非欧统计的数据类型知识体系。
-
-**推荐度：高。**
-
----
-
-## B.3 Intrinsic predictive density estimation on the sphere under additional information
-
-**作者：** Abdolnasser Sadeghkhani  
-**发表日期：** 2026-10-02  
-**期刊：** Journal of the Korean Statistical Society  
-**原文：** https://doi.org/10.1007/s42952-026-00393-z
-
-### 研究问题
-
-当未来观测值位于球面上，并且已知两个未知方向参数之间存在几何约束时，如何构造预测概率密度？
-
-### 核心贡献
-
-论文研究球面上的 geodesic normal model。
-
-它通过测地距离及对数映射表达参数约束，并建立相应的贝叶斯预测密度。
-
-研究还讨论：
-
-- Kullback–Leibler 损失；
-- 受约束的贝叶斯预测；
-- 正交变换下的等变性；
-- 高集中度条件下的局部渐近近似。
-
-### 统计学价值
-
-它表明球面几何不仅影响均值和回归，还会影响完整的概率密度预测与决策理论。
-
-**推荐度：高。**
-
----
-
-## B.4 Retraction based regression methods on Riemannian manifolds
-
-**作者：** Estefanía Loayza-Romero, Benedikt Sibum, Kathrin Welker  
-**日期：** 2026-06-01  
-**类别：** arXiv 预印本  
-**原文：** https://arxiv.org/abs/2606.02116
-
-### 研究问题
-
-经典 geodesic regression 通常需要反复计算黎曼指数映射。
-
-如果指数映射计算成本很高，能否构造更灵活的流形回归方法？
-
-### 核心贡献
-
-论文提出基于 retraction 的流形回归框架。
-
-它使用局部回缩映射代替部分指数映射计算，并研究相应切丛上的优化结构。
-
-作者将方法应用于 p-norm sphere，并通过黎曼最速下降算法求解。
-
-### 统计学价值
-
-为复杂流形上的回归建模提供了计算几何方面的新方法。
-
-### 局限
-
-这种回缩构造不应被直接视为与精确测地回归完全相同；其几何近似和计算效果取决于具体空间及 retraction 的选择。
-
-**推荐度：中高。**
-
----
-
-## B.5 Smoothed estimation of Wasserstein barycenters
-
-**作者：** Pengtao Li, Changbo Zhu, Xiaohui Chen  
-**日期：** 2026-05-05  
-**类别：** arXiv 预印本  
-**原文：** https://arxiv.org/abs/2605.03300
-
-### 研究问题
-
-Wasserstein barycenter 可以作为概率分布的统计均值，但高维分布的重心估计通常面临严重的维数灾难。
-
-是否能够利用分布的光滑性改善统计估计速度？
-
-### 核心贡献
-
-作者结合：
-
-- 密度估计；
-- Sobolev 几何；
-- Wasserstein barycenter 的 semi-dual 形式；
-
-提出具有光滑性适应能力的估计方法，并建立重心目标函数及其最小化点的非参数收敛速率。
-
-### 统计学价值
-
-说明统计对象的光滑性以及空间的几何结构，可以共同决定估计难度。
-
-**推荐度：高。**
-
----
-
-# C. 今日核心论文精读
-
-## Geometry and barycenters in large CAT(κ) spaces
-
-**作者：** Boukhateb, Brunel & Stromme（2026）
-
-**原文：** https://arxiv.org/abs/2610.17909
-
-## C.1 研究动机
-
-对于欧氏数据，样本均值具有很好的统计性质。
-
-例如，在有限二阶矩条件下，普通样本均值的期望平方误差具有：
-
-```math
-\mathbb E[\|\bar X-\mu\|^2]
-=
-\frac{\sigma^2}{n}
-```
-
-这样的形式，其中 $\sigma^2$ 表示总方差。
-
-对于一般度量空间，我们希望获得类似的结果：
-
-```math
-\mathbb E[d^2(\hat b_n,b)]
-\leq
-\frac{C\sigma^2}{n}
-```
-
-但几何结构会使问题复杂化。
-
-在非正曲率的 CAT(0) 空间中，Fréchet 风险具有良好的强测地凸性。
-
-而在正曲率上界空间中，风险函数可能出现非凸现象。
-
-传统分析往往通过限制样本所在区域，保证足够强的凸性。
-
-论文提出的问题是：
-
-**如果允许更大的数据区域，使得 Fréchet 风险不再具有传统强测地凸性，是否仍能证明重心估计具有快速收敛速度？**
-
----
-
-## C.2 什么是 CAT(κ) 空间？
-
-CAT 空间是一类通过比较测地三角形来描述曲率的度量空间。
-
-这里的 $\kappa$ 表示曲率上界。
-
-可以从三个典型几何模型理解：
-
-| 曲率类型 | 典型空间 |
+| 几何 | 典型空间 |
 |---|---|
-| $\kappa<0$ | 双曲几何 |
-| $\kappa=0$ | 欧氏几何 |
-| $\kappa>0$ | 球面几何 |
+| 零曲率 | 欧氏空间 |
+| 正曲率 | 球面 |
+| 负曲率 | 双曲空间 |
 
-严格地说，CAT(κ) 表示空间中的适当测地三角形不比曲率为 $\kappa$ 的模型三角形更厚，不能简单理解为“所有点的曲率都等于 $\kappa$”。
+但在一般度量空间中，我们不一定能够使用传统微分几何定义曲率。
 
-论文重点研究 $\kappa>0$ 的情形。
+一种重要的替代方法是 Alexandrov 曲率比较。
 
----
+它通过比较测地三角形与常曲率模型三角形的几何性质来定义曲率上界或下界。
 
-## C.3 数学问题设定
-
-设：
-
-```math
-(\mathcal X,d)
-```
-
-是一个测地度量空间。
-
-随机对象 $X$ 的分布为 $\mu$。
-
-总体 Fréchet 风险为：
-
-```math
-F_{\mu}(z)
-=
-\frac12\int_{\mathcal X}d^2(x,z)\,d\mu(x)
-```
-
-总体重心 $b$ 满足：
-
-```math
-F_{\mu}(b)
-=
-\min_{z\in\mathcal X}F_{\mu}(z)
-```
-
-给定独立同分布样本：
-
-```math
-X_1,\ldots,X_n
-```
-
-对应的经验重心为：
-
-```math
-\frac1n\sum_{i=1}^{n}d^2(X_i,\hat b_n)
-=
-\min_{z\in\mathcal X}
-\frac1n\sum_{i=1}^{n}d^2(X_i,z)
-```
-
-论文考虑的一个重要条件是：当 $\kappa>0$ 时，分布集中在半径为 $r$ 的适当球形区域内，其中：
-
-```math
-r<
-\frac{\pi}{2\sqrt{\kappa}}
-```
-
-更准确地说，该区域属于论文定义的 $\kappa$-domain。
-
-在这种区域中，重心可以保持唯一，即使 Fréchet 风险不满足传统的全局强测地凸性。
+这引出了 CAT 空间。
 
 ---
 
-## C.4 主要理论结果
+## A.5 CAT(0) 空间
 
-论文证明，在相应 CAT(κ) 几何条件和分布条件下，经验重心估计具有以下误差结构：
+CAT(0) 空间是一类具有 Alexandrov 意义下非正曲率上界的测地空间。
+
+它具有非常重要的性质：
+
+**平方距离沿测地线满足一种强化的凸性不等式。**
+
+设 $\gamma$ 是从 $x$ 到 $y$ 的最短测地线，那么对于任意点 $z$：
 
 ```math
-\mathbb E[d^2(\hat b_n,b)]
+d^2(z,\gamma(t))
 \leq
-\frac{C(r,\kappa)\sigma_{\mu}^2}{n}
+(1-t)d^2(z,x)
++
+td^2(z,y)
+-
+t(1-t)d^2(x,y)
 ```
 
 其中：
 
 ```math
-\sigma_{\mu}^2
-=
-\mathbb E[d^2(X,b)]
+0\leq t\leq1
 ```
 
-而 $C(r,\kappa)$ 是依赖区域半径和曲率上界的几何常数。
+这个公式是理解 CAT(0) 统计理论的重要起点。
 
-因此，经验重心的期望平方距离误差达到：
+### 为什么它重要？
+
+最后一项：
 
 ```math
-O(n^{-1})
+-t(1-t)d^2(x,y)
 ```
 
-的阶数。
+提供了比普通凸性更强的控制。
 
-这对应于距离本身的典型误差尺度：
+在适当的完备性和矩条件下，这能够帮助证明：
+
+- Fréchet mean 存在；
+- Fréchet mean 唯一；
+- 重心对数据扰动稳定；
+- 样本重心具有良好的统计误差界。
+
+常见 CAT(0) 空间包括：
+
+- Hilbert 空间；
+- Hadamard 流形；
+- 某些树空间；
+- 一些具有非正曲率的几何对象空间。
+
+---
+
+## A.6 正曲率空间中的困难
+
+球面具有正曲率。
+
+它在全局范围内并不具有 CAT(0) 空间那样的平方距离强凸性。
+
+例如，单位球面上两个对跖点之间存在无穷多条最短半大圆路径。
+
+如果数据只由两个等权重的对跖点组成，那么沿这些路径的中点构成一整条赤道。
+
+这些中点都可以成为 Fréchet mean。
+
+因此，Fréchet mean 可能不唯一。
+
+这说明：
+
+**曲率、数据分布和可行区域共同决定均值的统计性质。**
+
+不过，在球面足够小的局部区域中，仍然可以建立良好的均值唯一性和统计估计理论。
+
+---
+
+# B. 高质量研究精选
+
+本期选择五项研究：
+
+- 一项奠基性经典；
+- 三项正式发表的高质量研究；
+- 一项经过作者背景核验的重要预印本。
+
+---
+
+## B.1 Probability Measures on Metric Spaces of Nonpositive Curvature
+
+**作者：** Karl-Theodor Sturm  
+**年份：** 2003  
+**出版：** Contemporary Mathematics, Volume 338  
+**类型：** 经典数学理论研究
+
+**原文：**
+
+https://doi.org/10.1090/conm/338/06080
+
+### 研究问题
+
+如何在具有非正曲率的度量空间中建立概率分布、期望与重心的数学理论？
+
+### 核心贡献
+
+- 非正曲率空间上的概率测度；
+- Barycenter；
+- Jensen 不等式；
+- Law of Large Numbers；
+- 重心映射的收缩性质。
+
+### 为什么重要？
+
+Sturm 的工作为后来许多 CAT(0) 统计理论奠定了数学基础。
+
+它不是普通应用论文，而是理解度量几何与概率论联系的重要经典研究。
+
+### 局限
+
+数学抽象程度较高，重点是非正曲率结构，并不直接覆盖任意正曲率空间。
+
+**推荐度：极高。**
+
+---
+
+## B.2 Concentration of Empirical Barycenters in Metric Spaces
+
+**作者：** Victor-Emmanuel Brunel, Jordan Serres  
+**年份：** 2024  
+**会议：** 35th International Conference on Algorithmic Learning Theory（ALT 2024）  
+**论文集：** Proceedings of Machine Learning Research, 237, 337–361  
+**类型：** 正式发表的统计学习理论研究
+
+**原文：**
+
+https://proceedings.mlr.press/v237/brunel24a.html
+
+**PDF：**
+
+https://proceedings.mlr.press/v237/brunel24a/brunel24a.pdf
+
+### 研究问题
+
+对于非正曲率度量空间中的随机对象，能否建立类似经典均值的 Hoeffding 和 Bernstein 集中不等式？
+
+### 核心贡献
+
+- 研究经验重心的集中性质；
+- 研究迭代重心；
+- 推广非欧空间中的次高斯概念；
+- 建立有限样本高概率误差界；
+- 为随机在线重心算法提供 PAC 保证。
+
+### 统计学意义
+
+将非欧重心理论从渐近一致性推进到有限样本的概率控制。
+
+### 局限
+
+核心理论依赖非正曲率与相应的尾部条件，不能直接推广到任意度量空间。
+
+**推荐度：极高。本期核心精读。**
+
+---
+
+## B.3 On the Concentration of the Minimizers of Empirical Risks
+
+**作者：** Paul Escande  
+**年份：** 2024  
+**期刊：** Journal of Machine Learning Research, 25(251), 1–53  
+**类型：** 正式发表的统计学习理论研究
+
+**原文：**
+
+https://jmlr.org/papers/v25/23-1149.html
+
+### 研究问题
+
+在一般统计估计问题中，如何控制经验风险最小化点偏离总体风险最小化点的概率？
+
+### 核心贡献
+
+提出经验风险最小化点的集中分析框架，并讨论多类统计问题，包括：
+
+- 正曲率和负曲率空间中的重心；
+- 协方差矩阵的子空间；
+- 回归问题；
+- Entropic-Wasserstein barycenters。
+
+### 统计学意义
+
+提供了比单一非欧均值问题更加一般的风险最小化分析视角。
+
+### 局限
+
+理论需要对应的风险函数稳定性与正则条件，不是无条件适用于所有复杂空间。
+
+**推荐度：高。**
+
+---
+
+## B.4 Robust Estimation in Metric Spaces: Achieving Exponential Concentration with a Fréchet Median
+
+**作者：** Jakwang Kim, Jiyoung Park, Anirban Bhattacharya  
+**年份：** 2025  
+**会议：** AISTATS 2025  
+**论文集：** Proceedings of Machine Learning Research, 258, 4222–4230  
+**类型：** 正式发表的统计学习方法研究
+
+**原文：**
+
+https://proceedings.mlr.press/v258/kim25e.html
+
+### 研究问题
+
+当随机对象具有重尾分布时，如何在非欧度量空间中构造具有指数型集中性质的稳健估计器？
+
+### 核心贡献
+
+研究基于 Fréchet median 的稳健聚合方法，并在适当的 CAT(κ) 几何和概率条件下建立指数集中保证。
+
+### 统计学意义
+
+将稳健估计与非欧重心理论结合，拓展了复杂对象数据下的不确定性控制方法。
+
+### 局限
+
+仍然依赖空间曲率及对应的误差控制条件；结论不能直接解释为对任意污染比例稳健。
+
+**推荐度：高。**
+
+---
+
+## B.5 Geometry and Barycenters in Large CAT(κ) Spaces
+
+**作者：** Yassine Boukhateb, Victor-Emmanuel Brunel, Austin J. Stromme  
+**提交日期：** 2026-10  
+**状态：** arXiv 预印本
+
+**原文：**
+
+https://arxiv.org/abs/2610.17909
+
+### 作者背景核验
+
+合作者 Victor-Emmanuel Brunel 已发表：
+
+*Concentration of Empirical Barycenters in Metric Spaces*，ALT 2024。
+
+https://proceedings.mlr.press/v237/brunel24a.html
+
+因此，作者团队具有与本预印本直接相关的正式研究成果。
+
+### 研究问题
+
+当空间具有正的 Alexandrov 曲率上界，且研究区域大于传统强测地凸性容易保证的范围时，能否建立重心的统计估计理论？
+
+### 核心贡献
+
+论文研究：
+
+- Quantitative Four-Point Inequality；
+- Geodesic Stability；
+- Fréchet 风险函数的几何性质；
+- 经验重心与迭代重心的有限样本界；
+- 重心的稀疏表示和近似。
+
+### 统计学价值
+
+将传统非正曲率空间中的部分重心估计思想推进到更广泛的正曲率上界空间。
+
+### 局限
+
+仍然需要明确的曲率、局部区域及概率条件；当前是预印本，其结论尚不能视为完成正式同行评审。
+
+**推荐度：高，值得持续追踪。**
+
+---
+
+# C. 核心论文精读
+
+## Concentration of Empirical Barycenters in Metric Spaces
+
+Victor-Emmanuel Brunel & Jordan Serres（2024）
+
+Algorithmic Learning Theory
+
+https://proceedings.mlr.press/v237/brunel24a.html
+
+---
+
+## C.1 研究动机
+
+在欧氏空间中，样本均值通常具有良好的集中性质。
+
+假设：
+
+```math
+X_1,\ldots,X_n
+```
+
+为独立同分布的欧氏随机向量。
+
+如果数据满足适当的次高斯或有界性条件，那么样本均值偏离总体均值的概率可以受到指数型不等式控制。
+
+但当 $X_i$ 属于非欧空间时：
+
+- 对象之间无法自然相加；
+- 样本均值被替换为 Fréchet mean；
+- 传统依赖向量加法的集中不等式无法直接使用。
+
+因此，本文研究：
+
+**能否在一般非正曲率度量空间中，建立与经典均值类似的有限样本集中不等式？**
+
+---
+
+## C.2 数学问题设定
+
+设：
+
+```math
+(M,d)
+```
+
+是一个完备非正曲率度量空间。
+
+考虑随机对象：
+
+```math
+X_1,\ldots,X_n
+```
+
+它们独立同分布于某个概率分布。
+
+定义总体 Fréchet 风险：
+
+```math
+F(z)=\mathbb E[d^2(X,z)]
+```
+
+总体重心 $b^*$ 满足：
+
+```math
+F(b^*)=\min_{z\in M}F(z)
+```
+
+定义总体 Fréchet variance：
+
+```math
+\sigma^2=\mathbb E[d^2(X,b^*)]
+```
+
+经验重心 $\hat b_n$ 满足：
+
+```math
+\frac1n\sum_{i=1}^{n}d^2(X_i,\hat b_n)
+=
+\min_{z\in M}
+\frac1n\sum_{i=1}^{n}d^2(X_i,z)
+```
+
+研究的目标是控制：
+
+```math
+d(\hat b_n,b^*)
+```
+
+的大小。
+
+---
+
+## C.3 经验重心与迭代重心
+
+论文研究两种重要估计器。
+
+### Empirical Barycenter
+
+经验重心是一次性最小化样本平方距离目标函数得到的估计器。
+
+### Inductive Barycenter
+
+迭代重心通过递归方式更新。
+
+设初始点：
+
+```math
+b_1=X_1
+```
+
+对于第 $k$ 步，沿着从 $b_{k-1}$ 到 $X_k$ 的唯一最短测地线，取比例为 $1/k$ 的位置作为新重心：
+
+```math
+b_k=\gamma_{b_{k-1},X_k}(1/k)
+```
+
+在 CAT(0) 空间中，连接两点的最短测地线唯一，因此该递归具有明确几何意义。
+
+### 为什么考虑迭代重心？
+
+因为经验重心需要求解一个全局最优化问题。
+
+对于复杂数据对象，这个计算可能十分困难。
+
+而迭代重心可以逐步更新，适用于在线数据与随机算法。
+
+---
+
+## C.4 核心理论：非欧空间中的集中不等式
+
+作者首先建立适用于度量空间随机变量的次高斯分析工具。
+
+在非正曲率条件下，经验重心和迭代重心都可以获得集中保证。
+
+### Corollary 11
+
+假设：
+
+- 观测独立同分布；
+- 空间满足论文要求的非正曲率条件；
+- 随机对象满足论文定义的 $K^2$-sub-Gaussian 条件。
+
+令 $B_n$ 表示经验重心或迭代重心。
+
+那么对于：
+
+```math
+0<\delta<1
+```
+
+以至少 $1-\delta$ 的概率成立：
+
+```math
+d(B_n,b^*)
+\leq
+\frac{\sigma}{\sqrt n}
++
+K\sqrt{
+\frac{\log(1/\delta)}{n}
+}
+```
+
+这是整篇论文最值得理解的结果之一。
+
+---
+
+## C.5 如何理解这个误差界？
+
+误差被分成两部分：
+
+```math
+\frac{\sigma}{\sqrt n}
+```
+
+以及：
+
+```math
+K\sqrt{\frac{\log(1/\delta)}{n}}
+```
+
+第一部分与数据本身的总体波动规模有关。
+
+第二部分与希望达到的置信水平有关。
+
+如果希望失败概率 $\delta$ 更小，就需要允许相应的误差半径增大。
+
+对于固定的 $\delta$ 和模型常数，距离误差具有：
 
 ```math
 O(n^{-1/2})
 ```
 
-论文还研究了相应的高概率误差界以及迭代重心。
+的量级。
 
-**最值得关注的是：**
+这说明在非正曲率空间中，可以获得与普通欧氏样本均值相似的有限样本集中速度。
 
-作者不需要在整个研究区域上维持传统意义的强测地凸性，也能获得快速的统计估计误差界。
+但需要强调：
+
+**这一结论依赖次高斯条件，并不是仅有有限二阶矩时自动成立的高概率保证。**
 
 ---
 
-## C.5 核心证明思想
+## C.6 Hoeffding 型不等式
 
-论文构造了新的几何工具，包括：
+论文还讨论有界随机对象的特殊情形。
 
-1. Quantitative Four-Point Inequality；
-2. Geodesic Stability；
-3. Fréchet Variance Inequality；
-4. 基于 Tangent Cone 的重心误差分析。
+假设存在点 $x_0$ 和常数 $C>0$，使：
 
-其中一个重要思想是：
+```math
+d(X_i,x_0)\leq C
+```
 
-将原始弯曲空间中难以直接分析的重心估计问题，转化为在相应切锥中更容易控制的误差问题。
+几乎必然成立。
 
-再利用切锥的 CAT(0) 结构和几何稳定性，将误差控制传递回原空间。
+则可以获得：
 
-### 图 2：从几何结构到统计误差界
+```math
+d(B_n,b^*)
+\leq
+\frac{\sigma}{\sqrt n}
++
+C\sqrt{
+\frac{\log(1/\delta)}{n}
+}
+```
+
+的高概率误差界。
+
+这与经典 Hoeffding 不等式的思想非常接近。
+
+但这里估计的是度量空间中的重心，而不是普通向量均值。
+
+---
+
+## C.7 理论证明的主要思路
+
+本文的证明结构可以从三个方面理解。
+
+### 第一：利用非正曲率保证重心的稳定性
+
+CAT(0) 几何的凸性性质使得重心对输入数据扰动具有良好的稳定性。
+
+### 第二：研究重心作为样本函数的集中性质
+
+将重心视为由多个随机对象构造的估计量。
+
+通过分析输入数据的扰动如何影响最终重心，将度量空间中的次高斯性质传递到重心估计量。
+
+### 第三：结合偏差控制与集中不等式
+
+先控制重心到总体目标的平均距离，再利用集中不等式控制随机偏离。
+
+由此得到有限样本误差界。
+
+### 图 2：从几何性质到集中不等式
 
 ```mermaid
 flowchart TD
-    A["CAT(κ) 空间"] --> B["控制曲率与测地线几何"]
-
-    B --> C["四点不等式与测地稳定性"]
-    C --> D["Fréchet 函数的稳定性"]
-    D --> E["切锥中的重心误差分析"]
-    E --> F["经验重心有限样本误差界"]
-
-    F --> G["期望平方距离误差：1/n 阶"]
-    F --> H["高概率误差控制"]
+    A["CAT(0) 非正曲率"] --> B["重心唯一性与稳定性"]
+    B --> C["样本扰动的影响控制"]
+    C --> D["度量空间次高斯集中"]
+    D --> E["经验重心与迭代重心"]
+    E --> F["有限样本高概率误差界"]
+    F --> G["在线重心算法的 PAC 保证"]
 ```
 
-这不是论文每一条证明的逐步复现，而是主要理论工具之间的概念联系。
+---
+
+## C.8 研究价值
+
+我认为这篇论文最重要的贡献有三点。
+
+**第一：把经典集中不等式推广到非欧重心估计。**
+
+这使得度量空间中的均值不仅具有渐近理论，也具有可量化的有限样本不确定性。
+
+**第二：同时研究经验重心与迭代重心。**
+
+这连接了统计估计与实际可执行的计算方法。
+
+**第三：结果不依赖普通欧氏维数。**
+
+理论框架可以适用于某些无限维或非线性度量空间，而不要求空间必须是有限维光滑流形。
 
 ---
 
-## C.6 研究价值与局限
+## C.9 局限与研究机会
 
-### 主要贡献
+### 主要局限
 
-**第一：扩大了统计估计理论适用的几何区域。**
+- 核心结果依赖非正曲率或相关几何条件。
+- 高概率集中界需要适当的尾部控制条件。
+- 正曲率空间通常需要额外区域约束。
+- 经验重心本身的计算在复杂空间中可能具有较高成本。
 
-作者不再局限于传统强测地凸性容易保证的小范围。
+### 值得研究的问题
 
-**第二：将几何稳定性与有限样本统计理论联系起来。**
+**方向一：正曲率重心估计**
 
-空间曲率不仅影响距离定义，还直接影响统计估计的误差常数和证明工具。
+是否能够在更大的正曲率区域中建立类似集中不等式？
 
-**第三：为复杂空间上的重心估计提供新的理论工具。**
+这也是 2026 年 Boukhateb、Brunel 和 Stromme 新预印本关注的问题之一。
 
-这可能启发流形统计、稳健统计和非欧优化等问题的研究。
+**方向二：重尾稳健重心**
 
-### 局限
+如果只有有限二阶矩，能否借助 Median-of-Means 或 Fréchet median 构造稳健集中估计？
 
-- 仍要求特定的曲率上界和数据区域条件；
-- 随着数据接近允许区域的边界，几何常数可能恶化；
-- 不能直接将结果推广到任意度量空间；
-- 论文侧重重心估计理论，不代表所有复杂空间上的全局优化问题都容易求解。
+**方向三：非欧回归中的统一误差界**
 
----
-
-## C.7 值得继续研究的问题
-
-以下属于基于论文结果提出的研究思考。
-
-### 方向一：更一般的曲率条件
-
-能否在不满足全局 CAT 曲率上界的空间中，获得类似的有限样本误差界？
-
-### 方向二：稳健重心估计
-
-如果观测具有重尾分布或者受到异常值污染，能否把这些几何稳定性工具与稳健聚合方法结合？
-
-### 方向三：从均值走向回归
-
-对于条件 Fréchet mean：
-
-```math
-m(x)
-```
-
-是否能够在类似的几何条件下建立局部回归的统一收敛或高概率误差理论？
-
----
-
-## C.8 与第 001 期的联系
-
-第 001 期研究的是：
-
-**如何在一般度量空间中定义均值？**
-
-第 002 期进一步研究：
-
-**空间几何如何影响均值的存在性、唯一性和估计误差？**
-
-这也是从定义统计对象走向研究统计理论的关键一步。
+能否把重心的集中理论推广到条件 Fréchet mean 及回归函数的统一收敛？
 
 ---
 
 # D. 今日总结
 
-## 三个核心收获
+## D.1 三个核心收获
 
-**1. 距离选择具有统计意义。**
+**第一：** 同一个数据空间可能具有不同的距离结构，距离选择会影响统计方法。
 
-欧氏距离与测地距离可能对应不同的均值、回归模型和统计解释。
+**第二：** CAT(0) 空间中的几何凸性能够帮助建立 Fréchet mean 的唯一性与稳定性理论。
 
-**2. 曲率会影响估计问题。**
-
-在某些具有正曲率上界的空间中，Fréchet 风险可能不再具有全局强测地凸性，但仍可能拥有唯一重心及良好的估计性质。
-
-**3. 几何工具可以产生统计理论结果。**
-
-测地稳定性、四点不等式、切锥分析等工具，可以用于证明非欧统计估计的有限样本误差界。
+**第三：** 非欧统计可以获得与经典统计类似的有限样本集中不等式，但这些结论必须建立在明确的几何与概率假设之上。
 
 ---
 
-## 今日自测
+## D.2 今日练习
 
-假设单位球面上有两个点，它们对应的中心夹角为 90°。
+假设单位球面上的两个点对应的中心夹角为 90°。
 
-请分别求：
+分别计算：
 
 1. 三维欧氏距离；
 2. 球面测地距离。
 
 ### 答案
 
-欧氏距离：
+欧氏弦长：
 
 ```math
 d_E=\sqrt2
@@ -738,45 +831,49 @@ d_E=\sqrt2
 d_G=\frac{\pi}{2}
 ```
 
-二者不同，因为一个测量三维直线距离，另一个测量球面上的最短路径长度。
+两者不同，因为一个测量欧氏空间中的直线长度，另一个测量球面上的最短路径长度。
 
 ---
 
-## 下一期预告
+## D.3 下一期预告
 
-**第 003 期：流形、切空间与指数映射**
+### 第 003 期｜流形、切空间与统计推断
 
-预计学习：
+重点学习：
 
-- 什么是流形（Manifold）；
-- 为什么局部可以使用欧氏坐标；
-- 切空间（Tangent Space）；
-- 指数映射（Exponential Map）；
-- 从测地线到流形回归。
-
-前沿研究雷达继续独立追踪新的统计理论和方法。
+- Smooth Manifold；
+- Tangent Space；
+- Riemannian Metric；
+- Exponential Map；
+- Logarithm Map；
+- 流形上的统计推断。
 
 ---
 
 # 参考文献
 
-1. Boukhateb, Y., Brunel, V.-E., & Stromme, A. J. (2026). *Geometry and barycenters in large CAT(κ) spaces*.  
+1. Sturm, K.-T. (2003). Probability Measures on Metric Spaces of Nonpositive Curvature. Contemporary Mathematics, 338, 357–390.
+
+   https://doi.org/10.1090/conm/338/06080
+
+2. Brunel, V.-E., & Serres, J. (2024). Concentration of Empirical Barycenters in Metric Spaces. Proceedings of the 35th International Conference on Algorithmic Learning Theory, PMLR 237, 337–361.
+
+   https://proceedings.mlr.press/v237/brunel24a.html
+
+3. Escande, P. (2024). On the Concentration of the Minimizers of Empirical Risks. Journal of Machine Learning Research, 25(251), 1–53.
+
+   https://jmlr.org/papers/v25/23-1149.html
+
+4. Kim, J., Park, J., & Bhattacharya, A. (2025). Robust Estimation in Metric Spaces: Achieving Exponential Concentration with a Fréchet Median. Proceedings of AISTATS 2025, PMLR 258, 4222–4230.
+
+   https://proceedings.mlr.press/v258/kim25e.html
+
+5. Boukhateb, Y., Brunel, V.-E., & Stromme, A. J. (2026). Geometry and Barycenters in Large CAT(κ) Spaces. arXiv preprint.
+
    https://arxiv.org/abs/2610.17909
-
-2. Olsen, A. S., Mardia, K. V., Van De Ville, D., & Mørup, M. (2026). *Directional Statistics in Signal Processing: A Geometry Driven Overview of Models, Learning, and Applications*.  
-   https://arxiv.org/abs/2611.04595
-
-3. Sadeghkhani, A. (2026). *Intrinsic predictive density estimation on the sphere under additional information*. Journal of the Korean Statistical Society.  
-   https://doi.org/10.1007/s42952-026-00393-z
-
-4. Loayza-Romero, E., Sibum, B., & Welker, K. (2026). *Retraction based regression methods on Riemannian manifolds*.  
-   https://arxiv.org/abs/2606.02116
-
-5. Li, P., Zhu, C., & Chen, X. (2026). *Smoothed estimation of Wasserstein barycenters*.  
-   https://arxiv.org/abs/2605.03300
 
 ---
 
 **Non-Euclidean Statistics Learning Notes · Issue 002**
 
-*本笔记用于数学统计学习与科研文献追踪。所有论文的结论均应结合原始文献中的假设理解；研究延伸部分不代表原作者已证明的结果。*
+*修订版：核心精读以正式发表的理论论文为主；预印本明确标注状态及作者相关发表记录。*
