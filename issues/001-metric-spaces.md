@@ -1,35 +1,40 @@
 
-# 第 001 期｜从度量空间到稳健 Fréchet 回归
+# 第 001 期｜从度量空间到 Fréchet 均值与回归
 
 > Non-Euclidean Statistics · Learning & Research Notes
 
 **日期：** 2026-11-16  
-**主题：** Metric Spaces & Robust Fréchet Regression  
-**关键词：** 度量空间、Fréchet Mean、非参数回归、稳健估计、Minimax Theory
+**主题：** Metric Spaces, Fréchet Means & Regression
+
+**关键词：** Metric Space、Fréchet Mean、Object Data Analysis、Global Fréchet Regression、Robust Estimation
 
 ---
 
 ## 本期导读
 
-本系列采用两条并列的学习主线：
+非欧统计学研究的对象并不一定是普通实数或欧氏向量。现代统计数据还可能包括方向、概率分布、协方差矩阵、图、树和形状。
 
-- **基础知识：** 系统理解非欧统计学涉及的数学与统计概念。
-- **研究前沿：** 持续关注新理论、新统计方法和值得研究的问题。
+本期从一个简单的平均数问题出发，介绍度量空间与 Fréchet mean，并通过高质量研究论文理解这些基本概念如何扩展为现代统计方法。
 
-本期从度量空间与 Fréchet mean 出发，介绍六项非欧统计学研究，并重点分析稳健局部 Fréchet 回归。
+本期包括：
+
+- **A. 基础知识：** 欧氏与非欧数据、度量空间、Fréchet mean。
+- **B. 研究前沿：** 四项正式发表或经过作者背景核验的研究。
+- **C. 核心精读：** Fréchet Regression for Random Objects with Euclidean Predictors。
+- **D. 总结：** 核心收获、练习和下一期预告。
 
 ---
 
-# A. 今日基础知识：什么是非欧统计学？
+# A. 基础知识：非欧统计学从哪里开始？
 
 ## A.1 一个普通平均数无法解决的问题
 
-考虑两个方向观测：
+假设我们观察到两个方向：
 
-- 第一个方向为 10°
-- 第二个方向为 350°
+- 10°
+- 350°
 
-直接使用算术平均：
+如果将其当作普通数值，算术平均为：
 
 ```math
 \bar{\theta}
@@ -39,39 +44,15 @@
 180^\circ
 ```
 
-但是两个方向实际上都接近正北方。
+但两个方向实际上都接近 0°。
 
-按照圆周上的最短弧距离，0° 才是这两个方向合理的平均方向。
+因此，180° 不是合理的平均方向。
 
-为什么普通平均数会出现问题？
+问题在于：方向数据属于圆周，而不是普通实数轴。
 
-因为方向数据并不天然属于普通实数轴，而是属于圆周。
+在圆周上，0° 与 360° 表示同一个方向。
 
-在圆周上：
-
-```math
-0^\circ=360^\circ
-```
-
-但在普通实数轴上，0 和 360 是两个不同的数。
-
-因此，普通的算术平均没有正确反映方向数据的周期性结构。
-
-### 图 1：普通平均与圆周平均的区别
-
-```mermaid
-flowchart TD
-    A["观测方向：10° 和 350°"] --> B["普通实数距离"]
-    A --> C["圆周最短弧距离"]
-
-    B --> D["算术平均：180°"]
-    C --> E["圆周平均：0°"]
-
-    D --> F["忽略周期结构"]
-    E --> G["尊重数据的几何结构"]
-```
-
-对于圆周数据，可以定义最短弧距离：
+可以定义圆周上的最短弧距离：
 
 ```math
 d_{S^1}(\theta,\phi)
@@ -83,28 +64,26 @@ d_{S^1}(\theta,\phi)
 因此：
 
 ```math
-d_{S^1}(10^\circ,350^\circ)
-=
-20^\circ
+d_{S^1}(10^\circ,350^\circ)=20^\circ
 ```
 
-而不是 340°。
+而普通实数距离给出 340°。
 
-**核心思想：** 统计方法不仅取决于数据的数值，还取决于数据所在空间的几何结构。
+**关键结论：**
+
+同一组数据，如果使用不同的距离结构，就可能得到不同的统计解释。
 
 ---
 
-## A.2 欧氏空间与非欧空间
+## A.2 欧氏空间与非欧数据
 
-在经典多元统计中，通常考虑向量数据：
+经典多元统计通常考虑：
 
 ```math
 X\in\mathbb R^p
 ```
 
-例如，一个人可以由身高、体重和年龄构成的向量表示。
-
-欧氏距离定义为：
+欧氏距离为：
 
 ```math
 d_E(x,y)
@@ -114,26 +93,36 @@ d_E(x,y)
 }
 ```
 
-但对于现代统计中的复杂数据，我们可能需要不同的空间。
+在欧氏空间中，可以自然定义：
 
-| 数据对象 | 典型空间 | 研究问题 |
+- 向量加法；
+- 标量乘法；
+- 线性组合；
+- 内积；
+- 欧氏均值。
+
+但复杂数据可能具有不同的数学结构。
+
+| 数据对象 | 自然空间或结构 | 统计问题 |
 |---|---|---|
-| 方向和角度 | 圆周 | 方向均值 |
-| 地理位置 | 球面 | 测地距离与回归 |
-| 协方差矩阵 | SPD 矩阵空间 | 矩阵均值和统计推断 |
-| 概率分布 | Wasserstein 空间 | 分布回归与重心 |
-| 树结构 | 树空间 | 树均值和形状分析 |
-| 网络数据 | 图空间 | 网络统计推断 |
+| 方向、角度 | 圆周 $S^1$ | 方向均值 |
+| 地球表面位置 | 球面 $S^2$ | 测地均值 |
+| 协方差矩阵 | SPD 矩阵空间 | 矩阵均值与回归 |
+| 概率分布 | Wasserstein 空间 | 分布重心 |
+| 系统发育树 | 树空间 | 树均值与变异 |
+| 图、网络 | 图空间 | 网络比较与推断 |
 
-需要注意，非欧空间不一定是流形。
+这里需要强调：
 
-一般度量空间可以包括离散对象、树、网络以及不具有光滑结构的空间。
+**非欧数据不一定属于光滑流形。**
+
+一般度量空间可以包含离散对象、树、图以及其他没有线性结构的复杂对象。
 
 ---
 
 ## A.3 度量空间（Metric Space）
 
-一个度量空间由两个部分组成：
+一个度量空间表示为：
 
 ```math
 (\Omega,d)
@@ -141,12 +130,12 @@ d_E(x,y)
 
 其中：
 
-- $\Omega$ 是所有可能数据对象的集合；
+- $\Omega$ 是所有可能数据对象构成的集合；
 - $d$ 是对象之间的距离函数。
 
-距离函数必须满足三个基本性质。
+距离函数必须满足三个条件。
 
-**1. 非负性与同一性**
+### 非负性与同一性
 
 ```math
 d(x,y)\geq0,
@@ -154,41 +143,45 @@ d(x,y)\geq0,
 d(x,y)=0\iff x=y
 ```
 
-**2. 对称性**
+### 对称性
 
 ```math
 d(x,y)=d(y,x)
 ```
 
-**3. 三角不等式**
+### 三角不等式
 
 ```math
 d(x,z)\leq d(x,y)+d(y,z)
 ```
 
-度量空间的价值在于：
+度量空间不要求对象能够相加，但允许我们讨论：
 
-即使两个对象不能直接相加，我们仍然可以研究它们之间的距离、收敛性，以及基于距离构造的统计方法。
+- 距离；
+- 收敛；
+- 连续性；
+- 最优化；
+- 基于距离定义的统计泛函。
+
+因此，它为非欧统计提供了一种非常通用的数学语言。
 
 ---
 
-## A.4 从普通样本均值到 Fréchet Mean
+## A.4 从样本均值到 Fréchet Mean
 
-假设我们观察到：
+考虑欧氏样本：
 
 ```math
 X_1,\ldots,X_n\in\mathbb R^p
 ```
 
-普通样本均值定义为：
+普通样本均值为：
 
 ```math
-\bar X
-=
-\frac1n\sum_{i=1}^{n}X_i
+\bar X=\frac1n\sum_{i=1}^{n}X_i
 ```
 
-它具有一个重要的最优化性质：
+它具有一个重要性质：
 
 ```math
 \sum_{i=1}^{n}\|X_i-\bar X\|^2
@@ -199,560 +192,641 @@ X_1,\ldots,X_n\in\mathbb R^p
 
 也就是说，样本均值是使平方距离之和最小的点。
 
-这个形式可以推广到一般度量空间。
+这个性质不依赖均值必须通过加法来定义。
+
+因此，可以将它推广到度量空间。
 
 ### 样本 Fréchet Mean
 
-对于度量空间：
+设样本对象属于度量空间：
 
 ```math
-(\Omega,d)
+Y_1,\ldots,Y_n\in\Omega
 ```
 
-样本 Fréchet mean 是满足以下等式的对象：
+如果存在 $\hat\mu_F\in\Omega$，满足：
 
 ```math
-\frac1n\sum_{i=1}^{n}
-d^2(Y_i,\hat\mu_F)
+\frac1n\sum_{i=1}^{n}d^2(Y_i,\hat\mu_F)
 =
 \min_{\omega\in\Omega}
-\frac1n\sum_{i=1}^{n}
-d^2(Y_i,\omega)
+\frac1n\sum_{i=1}^{n}d^2(Y_i,\omega)
 ```
 
-其中 $\hat\mu_F$ 表示一个样本 Fréchet mean。
+则称 $\hat\mu_F$ 为一个样本 Fréchet mean。
 
-注意，最小值可能无法取得，或者可能存在多个最小化对象。
+### 总体 Fréchet Mean
 
-因此在一般空间中，需要另外研究均值的存在性、唯一性与估计性质。
+对于随机对象 $Y$，定义 Fréchet 风险：
 
-### 图 2：从欧氏统计到 Fréchet 统计
+```math
+F(\omega)=\mathbb E[d^2(Y,\omega)]
+```
+
+若存在 $\mu_F$，使：
+
+```math
+F(\mu_F)=\min_{\omega\in\Omega}F(\omega)
+```
+
+那么 $\mu_F$ 为总体 Fréchet mean。
+
+注意：
+
+- 最小值不一定存在；
+- 最小化对象可能不唯一；
+- 空间的几何结构会影响优化与估计性质。
+
+---
+
+## A.5 Fréchet Variance
+
+如果总体 Fréchet mean 存在，可以定义 Fréchet variance：
+
+```math
+V_F=\mathbb E[d^2(Y,\mu_F)]
+```
+
+它是数据围绕 Fréchet mean 的平均平方距离。
+
+在欧氏空间中，它与传统总方差相对应。
+
+但在一般度量空间中，我们需要额外研究：
+
+- Fréchet mean 的唯一性；
+- 样本估计的一致性；
+- Fréchet variance 的渐近分布；
+- 不同群体之间的变异比较。
+
+这些问题也是现代非欧统计推断的重要组成部分。
+
+---
+
+## A.6 从 Fréchet Mean 到统计方法
+
+Fréchet mean 并不是研究的终点。
+
+它还可以推广为：
+
+- Fréchet regression；
+- Fréchet analysis of variance；
+- Fréchet change-point detection；
+- Fréchet hypothesis testing；
+- Robust Fréchet estimation。
+
+### 图 1：非欧统计的基本研究路线
 
 ```mermaid
 flowchart TD
-    A["统计观测"] --> B{"数据的自然结构"}
-
-    B --> C["欧氏向量空间"]
-    B --> D["一般度量空间"]
-
-    C --> E["普通样本均值"]
-    D --> F["Fréchet Mean"]
-
-    E --> G["经典回归"]
-    F --> H["Fréchet Regression"]
-
-    H --> I["稳健估计"]
-    H --> J["渐近理论"]
-    H --> K["统计假设检验"]
+    A["复杂数据对象"] --> B["选择数据空间与距离"]
+    B --> C["Metric Space"]
+    C --> D["Fréchet Mean"]
+    D --> E["Fréchet Variance"]
+    D --> F["Fréchet Regression"]
+    E --> G["统计推断"]
+    F --> G
+    G --> H["一致性、渐近理论与稳健性"]
 ```
 
-### 本节总结
+这条路线说明：
 
-Fréchet mean 提供了一种通过最小化平方距离来定义中心位置的通用方法。
-
-它也是现代非欧回归、分布值数据统计和流形统计的重要基础。
+**从最基本的距离结构出发，可以建立完整的统计估计和推断理论。**
 
 ---
 
-# B. 今日前沿研究雷达
+# B. 高质量研究精选
 
-本期关注六项 2026 年的研究成果。
+本期选择四项研究。
 
-以下论文主要为 arXiv 预印本，相关研究结果仍应结合原文假设与后续同行评审情况理解。
+其中三项为正式发表的重要论文，一项为经过作者发表记录核验的近期预印本。
 
-## B.1 Adaptive Local Fréchet Regression with Polyspherical Predictors
+## B.1 Large Sample Theory of Intrinsic and Extrinsic Sample Means on Manifolds—II
 
-**作者：** Chang Jun Im  
-**日期：** 2026-11-09  
-**原文：** https://arxiv.org/abs/2611.13240
+**作者：** Rabi Bhattacharya, Vic Patrangenaru  
+**年份：** 2005  
+**期刊：** The Annals of Statistics, 33(3), 1225–1259  
+**类型：** 经典奠基性研究
 
-**研究问题：**
+**原文：**
 
-如果解释变量来自多个不同维数的球面，如何构造局部 Fréchet 回归估计器？
+https://doi.org/10.1214/009053605000000093
 
-**核心贡献：**
+### 研究问题
 
-- 构造局部常数和局部线性 Fréchet 回归。
-- 对不同球面因子采用不同的带宽。
-- 利用交叉拟合预测风险进行变量选择。
-- 研究统一收敛速率和变量选择一致性。
+流形上的样本均值是否满足类似欧氏样本均值的中心极限定理？
 
-**统计学价值：**
+### 核心贡献
 
-将非参数回归、几何结构和变量选择结合起来。
+- 研究流形上 intrinsic mean 的渐近分布；
+- 建立 Fréchet sample mean 的中心极限定理；
+- 研究由嵌入定义的 extrinsic mean；
+- 为流形均值的置信区域和统计推断提供理论基础。
 
-**局限：**
+### 统计学意义
 
-理论保证依赖相应的光滑性、带宽和数据分布条件。
+把非欧统计从均值定义推进到大样本理论。
 
----
+### 局限
 
-## B.2 Principal Manifold Estimation with Riemannian Templates
+渐近正态性依赖相应的几何、唯一性与局部正则条件，不能无条件推广到任意度量空间。
 
-**作者：** Kun Meng, Christopher Perez  
-**首次提交：** 2026-04-05  
-**更新：** 2026-11-08  
-**原文：** https://arxiv.org/abs/2604.04272
-
-**研究问题：**
-
-如果高维数据集中在某个潜在低维流形附近，如何估计这一非线性几何结构？
-
-**核心贡献：**
-
-- 允许具有一般非欧拓扑结构的主流形。
-- 研究估计对象的数学良定义性。
-- 证明计算算法的收敛性。
-- 建立有限样本估计的一致性。
-- 提供相关的贝叶斯解释。
-
-**统计学价值：**
-
-将流形学习与正式的统计估计理论联系起来。
-
-**局限：**
-
-其数学框架涉及黎曼几何和 Sobolev 空间，理论条件较为复杂。
+**推荐度：极高。**
 
 ---
 
-## B.3 Robust Local Fréchet Regression
+## B.2 Fréchet Regression for Random Objects with Euclidean Predictors
 
-**完整标题：**
+**作者：** Alexander Petersen, Hans-Georg Müller  
+**年份：** 2019  
+**期刊：** The Annals of Statistics, 47(2), 691–719  
+**类型：** 经典方法与理论论文
 
-Robust Local Fréchet Regression: Nonasymptotic Theory and Minimax Optimality
+**正式原文：**
+
+https://doi.org/10.1214/17-AOS1624
+
+**开放预印本：**
+
+https://arxiv.org/abs/1608.03012
+
+### 研究问题
+
+当响应变量属于一般度量空间，但解释变量属于欧氏空间时，如何进行回归分析？
+
+### 核心贡献
+
+- Global Fréchet Regression；
+- Local Fréchet Regression；
+- 加权 Fréchet 风险；
+- 一致性及收敛速率理论；
+- 概率分布、相关矩阵和球面数据应用。
+
+### 统计学意义
+
+将回归从普通数值响应扩展到复杂随机对象。
+
+### 局限
+
+加权最小化需要存在性及唯一性条件；全局回归并不一定等于真正的条件 Fréchet mean。
+
+**推荐度：极高。本期重点精读。**
+
+---
+
+## B.3 Fréchet Analysis of Variance for Random Objects
+
+**作者：** Paromita Dubey, Hans-Georg Müller  
+**年份：** 2019  
+**期刊：** Biometrika, 106(4), 803–821  
+**类型：** 正式发表的统计推断研究
+
+**原文：**
+
+https://doi.org/10.1093/biomet/asz052
+
+### 研究问题
+
+当观测对象不能相加时，如何比较不同群体的中心位置和变异程度？
+
+### 核心贡献
+
+- 推广方差分析的思想；
+- 基于 Fréchet mean 和 variance 构造统计检验；
+- 研究 Fréchet variance 的渐近分布；
+- 建立相应的统计推断方法。
+
+### 统计学意义
+
+说明 Fréchet mean 和 variance 不仅可以描述数据，还可以用于群体比较与假设检验。
+
+### 局限
+
+相关极限定理和检验的有效性依赖独立性、矩条件及相应正则条件。
+
+**推荐度：极高。**
+
+---
+
+## B.4 Robust Local Fréchet Regression: Nonasymptotic Theory and Minimax Optimality
 
 **作者：** Chang Jun Im, Daisuke Kurisu  
-**日期：** 2026-10-16  
-**原文：** https://arxiv.org/abs/2610.23757
+**日期：** 2026-10  
+**状态：** arXiv 预印本，未标记为正式发表
 
-**研究问题：**
+**原文：**
 
-当非欧响应变量具有重尾分布时，如何实现稳健的非参数回归？
+https://arxiv.org/abs/2610.23757
 
-**核心贡献：**
+### 作者背景核验
+
+Chang Jun Im 已有相关正式发表成果：
+
+- *Local Fréchet Regression with Spherical Predictors*，Electronic Journal of Statistics，2025。
+
+  https://doi.org/10.1214/25-EJS2462
+
+Daisuke Kurisu 已有相关正式发表成果：
+
+- *Empirical Likelihood for Manifolds*，JRSSB，2026，与 Taisuke Otsu 合作。
+
+  https://doi.org/10.1093/jrsssb/qkaf043
+
+因此，这篇预印本具有可核实的相关研究基础，但作者既有发表记录并不等于当前预印本已完成同行评审。
+
+### 研究问题
+
+当非欧响应变量具有重尾性质时，如何构造稳健的局部 Fréchet 回归？
+
+### 核心贡献
 
 - 距离型 Median-of-Means 估计器；
-- 非渐近高概率误差界；
+- 有限二阶矩下的非渐近高概率误差界；
 - Minimax lower bounds；
-- 在相应条件下避免对响应空间施加熵条件。
+- 不等权 Fréchet 均值的稳定性分析。
 
-**统计学价值：**
+### 统计学价值
 
-在适当几何和概率条件下，实现与经典非参数回归匹配的逐点收敛速率。
+将稳健估计、非欧回归与有限样本理论结合。
 
-**本期重点精读。**
+### 局限
 
----
+理论仍需要相应的几何与局部光滑性条件；当前为预印本，后续可能修订。
 
-## B.4 Online Covariance Estimation on Riemannian Manifolds
-
-**完整标题：**
-
-Online Covariance Estimation for Averaged Stochastic Gradient Descent on Riemannian Manifolds
-
-**作者：** Jingrong Guan, Liwei Jiang, Sen Na  
-**日期：** 2026-10-24  
-**原文：** https://arxiv.org/abs/2610.33419
-
-**研究问题：**
-
-如何对黎曼流形上的随机梯度下降算法进行在线协方差估计？
-
-**核心贡献：**
-
-利用向量传输整合不同切空间中的信息，构造在线协方差估计器。
-
-**统计学价值：**
-
-将黎曼优化与统计推断相联系，为流形参数的不确定性量化提供方法。
-
-**局限：**
-
-需要满足相应的流形、算法与渐近理论条件。
-
----
-
-## B.5 Wasserstein Barycenter Under Sparse Sampling
-
-**完整标题：**
-
-Estimating the Wasserstein Barycenter of One-Dimensional Distributions Under Sparse Sampling
-
-**作者：** James Peng, Florian Stijven, Linbo Wang, Peter B. Gilbert  
-**日期：** 2026-06-08  
-**原文：** https://arxiv.org/abs/2606.10096
-
-**研究问题：**
-
-如果每个个体对应一个概率分布，但每个分布只能观测到少量样本，如何估计总体 Wasserstein barycenter？
-
-**核心贡献：**
-
-提出 marginal-constructed barycenter 估计器，并研究其逐点一致性与渐近正态性。
-
-**统计学价值：**
-
-连接稀疏采样、分布值数据和最优传输统计。
-
-**局限：**
-
-主要针对一维概率分布的相关估计问题。
-
----
-
-## B.6 Inference for Fréchet Regression
-
-**作者：** Wookyeong Song, Paromita Dubey, Hans-Georg Müller, Alexander Petersen  
-**日期：** 2026-05-19  
-**原文：** https://arxiv.org/abs/2605.19519
-
-**研究问题：**
-
-如何检验 Fréchet 回归模型中的解释变量是否具有显著作用？
-
-**核心贡献：**
-
-- 整体回归效应检验；
-- 部分解释变量效应检验；
-- 使用随机乘子和 Cauchy combination 等技术。
-
-**统计学价值：**
-
-把 Fréchet 回归从估计和预测推进到统计推断。
+**推荐度：高，作为近期研究观察。**
 
 ---
 
 # C. 核心论文精读
 
-## Robust Local Fréchet Regression: Nonasymptotic Theory and Minimax Optimality
+## Fréchet Regression for Random Objects with Euclidean Predictors
 
-**作者：** Im & Kurisu（2026）
+Alexander Petersen & Hans-Georg Müller (2019)
 
-原文：https://arxiv.org/abs/2610.23757
+The Annals of Statistics
+
+https://doi.org/10.1214/17-AOS1624
+
+---
 
 ## C.1 研究动机
 
-假设解释变量属于欧氏空间，响应变量属于一般度量空间：
+经典线性回归模型为：
 
 ```math
-X\in\mathbb R^d,
-\qquad
-Y\in(\mathcal Y,d_{\mathcal Y})
+Y=\beta_0+X^\top\beta+\varepsilon
 ```
 
-我们希望估计条件 Fréchet mean。
+这里 $Y$ 是普通实数响应。
 
-定义：
+如果 $Y$ 是：
 
-```math
-M_x(\omega)
-=
-\mathbb E[
-d_{\mathcal Y}^2(Y,\omega)\mid X=x
-]
-```
+- 一个概率分布；
+- 一个协方差矩阵；
+- 一张网络；
+- 一个球面方向；
 
-条件 Fréchet mean 满足：
+那么普通线性组合通常不再具有自然意义。
 
-```math
-M_x(m_\oplus(x))
-=
-\min_{\omega\in\mathcal Y}M_x(\omega)
-```
+这篇论文的主要问题是：
 
-传统局部 Fréchet 回归通过核加权平方距离构造估计器。
+**是否能够在不要求响应空间具有向量结构的情况下，构造类似经典线性回归的统计方法？**
 
-但在重尾分布下，局部估计可能受到极端观测的显著影响。
+作者的思路是：
 
-作者希望构造一种稳健估计器，同时获得有限样本高概率保证和最优收敛速率。
+先把欧氏线性回归重新写成一个加权平方距离最小化问题，再把欧氏距离替换成一般度量距离。
 
 ---
 
-## C.2 方法：Distance-Based Median-of-Means
-
-基本思想是：
-
-将数据分组，在每组独立估计局部 Fréchet mean，再使用距离关系进行稳健聚合。
-
-### 第一步：样本分组
-
-将样本分为：
-
-```math
-I_1,I_2,\ldots,I_B
-```
-
-每组大致包含：
-
-```math
-\frac nB
-```
-
-个观测。
-
-### 第二步：计算分组 Fréchet 估计量
-
-对于第 $b$ 组，寻找满足以下条件的对象：
-
-```math
-\sum_{i\in I_b}
-K_h(X_i,x)d_{\mathcal Y}^2(Y_i,\hat m_{h,b}(x))
-=
-\min_{\omega\in\mathcal Y}
-\sum_{i\in I_b}
-K_h(X_i,x)d_{\mathcal Y}^2(Y_i,\omega)
-```
-
-这里：
-
-- $K_h$ 是核权重；
-- $h$ 是带宽；
-- $\hat m_{h,b}(x)$ 是第 $b$ 组的局部估计结果。
-
-### 第三步：多数邻居聚合
-
-定义候选估计量的多数邻居半径：
-
-```math
-r_b=
-\inf\left\{
-r\geq0:
-\sum_{\ell=1}^{B}
-\mathbf 1\left[
-d_{\mathcal Y}(\hat m_{h,b},\hat m_{h,\ell})
-\leq r
-\right]>\frac B2
-\right\}
-```
-
-选择半径最小的候选估计量：
-
-```math
-\hat b\in\{b:r_b=\min_{1\leq j\leq B}r_j\}
-```
-
-最终得到：
-
-```math
-\hat m_{h,B}^{RLFR}(x)
-=
-\hat m_{h,\hat b}(x)
-```
-
-这种方法只依赖候选估计量之间的距离，不要求响应空间具备普通向量加法。
-
-### 图 3：Robust Local Fréchet Regression
-
-```mermaid
-flowchart TD
-    A["原始数据"] --> B["随机划分 B 个分组"]
-
-    B --> C1["分组 1：局部估计"]
-    B --> C2["分组 2：局部估计"]
-    B --> C3["分组 B：局部估计"]
-
-    C1 --> D["B 个候选 Fréchet 估计量"]
-    C2 --> D
-    C3 --> D
-
-    D --> E["计算候选估计量之间的距离"]
-    E --> F["计算多数邻居半径"]
-    F --> G["选择半径最小的候选量"]
-    G --> H["稳健局部回归结果"]
-```
-
----
-
-## C.3 主要理论结果
-
-论文研究两种局部光滑性框架。
-
-### 情形一：局部二阶光滑
-
-在相应的核函数、设计分布、几何条件和局部二阶矩条件下，可以获得：
-
-```math
-d_{\mathcal Y}
-\left(
-\hat m_{h,B}^{RLFR}(x_0),
-m_\oplus(x_0)
-\right)
-\leq
-C\left[
-h^2+
-\sigma
-\sqrt{
-\frac{\log(1/\delta)}
-{nh^df_X(x_0)}
-}
-\right]
-```
-
-该界在论文规定的样本量和带宽条件下，以至少 $1-\delta$ 的概率成立。
-
-这里：
-
-- 第一项是平滑偏差；
-- 第二项是随机误差；
-- $f_X(x_0)$ 是解释变量在目标点处的密度；
-- $C$ 表示依赖相关模型条件的常数。
-
-平衡两项误差后，固定置信水平下可得到逐点速率：
-
-```math
-n^{-2/(d+4)}
-```
-
-### 情形二：Wasserstein Hölder 连续性
-
-设条件响应分布为：
-
-```math
-P_x=\mathcal L(Y\mid X=x)
-```
+## C.2 条件 Fréchet Mean
 
 假设：
 
 ```math
-W_1(P_x,P_{x_0})
-\leq
-L_W\|x-x_0\|^\beta
+X\in\mathbb R^p,
+\qquad
+Y\in(\Omega,d)
 ```
 
-其中：
+自然的条件均值推广是：
 
 ```math
-0<\beta\leq1
+M_x(\omega)
+=
+\mathbb E[d^2(Y,\omega)\mid X=x]
 ```
 
-此时主要误差结构为：
+条件 Fréchet mean $m_F(x)$ 满足：
 
 ```math
-h^\beta+
-\sqrt{
-\frac{\log(1/\delta)}
-{nh^d}
-}
+M_x(m_F(x))
+=
+\min_{\omega\in\Omega}M_x(\omega)
 ```
 
-上式省略了固定的噪声、密度及几何常数。
+这是非欧版本的条件平均。
 
-相应的逐点收敛速率为：
+但直接估计条件 Fréchet mean 可能需要复杂的非参数平滑方法。
 
-```math
-n^{-\beta/(2\beta+d)}
-```
+因此，作者考虑两种回归策略：
 
-论文还建立了相应的 minimax lower bounds，说明这些速率在所研究的模型类中具有最优性。
+- Global Fréchet Regression；
+- Local Fréchet Regression。
 
 ---
 
-## C.4 理论为什么重要？
+## C.3 Global Fréchet Regression
 
-这篇论文最值得关注的，不仅是 Median-of-Means 算法本身。
+首先回忆普通线性回归。
 
-它还展示了一条重要的证明路线：
+令：
 
-**第一步：** 利用空间几何条件控制加权 Fréchet 估计器的稳定性。
-
-**第二步：** 建立单个分组的有限样本估计误差界。
-
-**第三步：** 利用独立分组和多数聚合获得高概率保证。
-
-**第四步：** 通过 minimax lower bound 证明收敛阶的最优性。
-
-因此：
-
-```mermaid
-flowchart TD
-    A["度量空间的几何条件"]
-    A --> B["加权 Fréchet 估计稳定性"]
-    B --> C["单个分组的误差控制"]
-    C --> D["Median-of-Means 稳健聚合"]
-    D --> E["非渐近高概率界"]
-    E --> F["Minimax 速率分析"]
+```math
+\mu_X=\mathbb E[X]
 ```
 
-这条思路可能对其他非欧估计问题也具有启发性。
+```math
+\Sigma=\mathbb E[(X-\mu_X)(X-\mu_X)^\top]
+```
+
+假设 $\Sigma$ 可逆。
+
+定义：
+
+```math
+s(z,x)
+=
+1+(z-\mu_X)^\top
+\Sigma^{-1}(x-\mu_X)
+```
+
+这个函数是一个依赖解释变量的权重。
+
+它满足：
+
+```math
+\mathbb E[s(X,x)]=1
+```
+
+对于普通欧氏响应，经典最佳线性预测可以写成：
+
+```math
+m_L(x)
+=
+\mathbb E[s(X,x)Y]
+```
+
+也可以写成加权平方误差的最小化点。
+
+由此定义 Global Fréchet Regression。
+
+令：
+
+```math
+G_x(\omega)
+=
+\mathbb E[s(X,x)d^2(Y,\omega)]
+```
+
+Global Fréchet regression function $m_G(x)$ 满足：
+
+```math
+G_x(m_G(x))
+=
+\min_{\omega\in\Omega}G_x(\omega)
+```
+
+### 重要说明
+
+Global Fréchet Regression 与真正的条件 Fréchet mean 不一定相同。
+
+它更类似于普通线性回归中的最佳线性预测。
+
+另外，权重 $s(X,x)$ 可能为负。
+
+因此，这不是普通非负概率权重下的 Fréchet mean；需要额外检查目标函数的良定义性、最小值存在性和唯一性。
 
 ---
 
-## C.5 方法的贡献与局限
+## C.4 样本估计器
 
-### 主要贡献
+给定样本：
 
-1. 构造适用于一般度量空间的稳健局部回归方法。
-2. 建立有限二阶矩条件下的高概率误差保证。
-3. 提出不等权 Fréchet 估计的稳定性分析工具。
-4. 证明相应的逐点 minimax 最优速率。
-5. 在特定几何条件下避免使用响应空间熵条件。
+```math
+(X_1,Y_1),\ldots,(X_n,Y_n)
+```
 
-### 局限
+先估计解释变量的均值：
 
-1. 仍依赖一定的几何性质，例如二次增长条件。
-2. 理论主要针对逐点估计。
-3. 分组数量与估计效率之间存在权衡。
-4. 数据驱动的带宽和分组数选择仍值得研究。
+```math
+\bar X=\frac1n\sum_{i=1}^{n}X_i
+```
+
+以及协方差：
+
+```math
+\hat\Sigma
+=
+\frac1n\sum_{i=1}^{n}
+(X_i-\bar X)(X_i-\bar X)^\top
+```
+
+在 $\hat\Sigma$ 可逆时，定义样本权重：
+
+```math
+\hat s_i(x)
+=
+1+(X_i-\bar X)^\top
+\hat\Sigma^{-1}(x-\bar X)
+```
+
+然后构造样本目标函数：
+
+```math
+G_{n,x}(\omega)
+=
+\frac1n\sum_{i=1}^{n}
+\hat s_i(x)d^2(Y_i,\omega)
+```
+
+选择满足以下关系的对象作为估计量：
+
+```math
+G_{n,x}(\hat m_G(x))
+=
+\min_{\omega\in\Omega}G_{n,x}(\omega)
+```
+
+这是原论文 Global Fréchet Regression 的核心结构。
 
 ---
 
-## C.6 值得进一步研究的方向
+## C.5 Local Fréchet Regression
 
-### 方向一：Uniform Convergence
+全局模型适合描述整体回归关系，但对于复杂非线性变化可能不够灵活。
 
-能否进一步控制整个解释变量区域上的估计误差？
+因此，论文还提出 Local Fréchet Regression。
+
+其核心思想是：
+
+在目标点 $x$ 附近，使用局部线性平滑权重构造 Fréchet 风险。
+
+对于一维解释变量，定义：
+
+```math
+\mu_j(x,h)
+=
+\mathbb E[
+K_h(X-x)(X-x)^j
+]
+```
+
+其中 $j=0,1,2$。
+
+再令：
+
+```math
+D(x,h)=\mu_0\mu_2-\mu_1^2
+```
+
+当 $D(x,h)>0$ 时，局部线性权重具有：
+
+```math
+w_h(z,x)
+=
+K_h(z-x)
+\frac{\mu_2-\mu_1(z-x)}
+{D(x,h)}
+```
+
+的形式。
+
+接下来最小化加权 Fréchet 风险。
+
+这种方法在思想上类似于欧氏统计中的 Local Linear Regression。
+
+### 与普通核回归的区别
+
+普通 Nadaraya–Watson 平滑通常使用非负核权重。
+
+局部线性权重则可能为负。
+
+但其优势在于，适当条件下可以改善边界偏差。
+
+需要注意：
+
+Local Fréchet Regression 的目标可以看成条件 Fréchet mean 的局部平滑近似，其性质依赖带宽、光滑性和响应空间条件。
+
+---
+
+## C.6 核心理论贡献
+
+论文在适当的存在性、唯一性、局部增长和经验过程条件下研究：
+
+1. Global Fréchet Regression 的一致性；
+2. Global Fréchet Regression 的收敛速率；
+3. Local Fréchet Regression 的平滑偏差；
+4. Local Fréchet Regression 的估计误差；
+5. 某些 Hilbert 空间情形下的极限分布。
+
+理论证明需要研究加权 Fréchet 风险在最小点附近的行为。
+
+关键难点在于：
+
+一般度量空间中无法直接使用欧氏参数空间的梯度和 Hessian。
+
+因此，作者使用经验过程、局部目标函数增长和 M-estimation 理论建立统计性质。
+
+---
+
+## C.7 统计学价值
+
+这篇论文的重要性在于：
+
+它并不要求响应变量一定属于光滑流形。
+
+只要存在适当的度量结构，就有机会建立回归方法。
 
 例如：
 
-```math
-\sup_{x\in\mathcal X}
-d_{\mathcal Y}
-\left(
-\hat m^{RLFR}(x),m_\oplus(x)
-\right)
+- 概率分布值响应；
+- 相关矩阵；
+- 球面方向；
+- 其他满足适当条件的度量空间值对象。
+
+论文还展示了在死亡率分布、脑成像相关矩阵和球面数据中的应用。
+
+### 图 2：Fréchet 回归的方法结构
+
+```mermaid
+flowchart TD
+    A["解释变量 X，响应对象 Y"] --> B["选择响应空间与距离 d"]
+    B --> C["条件 Fréchet Mean"]
+    C --> D["Global Fréchet Regression"]
+    C --> E["Local Fréchet Regression"]
+    D --> F["加权 Fréchet 风险最小化"]
+    E --> F
+    F --> G["一致性与收敛速率"]
+    G --> H["预测、统计推断和方法扩展"]
 ```
-
-### 方向二：Adaptive Robust Regression
-
-能否在未知噪声分布和光滑性的条件下，同时选择带宽与分组数？
-
-### 方向三：更弱的几何条件
-
-如果 Fréchet mean 不唯一，或者二次增长条件不成立，是否仍可以建立稳定的统计估计理论？
-
-这些问题是基于论文结果提出的研究延伸，并非原论文已经证明的结论。
 
 ---
 
-# D. 今日学习总结
+## C.8 局限与进一步研究
+
+### 局限
+
+- Global 模型可能无法刻画高度非线性的关系。
+- 一般度量空间中的最小化问题可能不唯一。
+- 理论依赖响应空间的复杂度和局部正则条件。
+- 局部方法存在带宽选择与偏差、方差权衡。
+- 统计推断比欧氏线性回归更加复杂。
+
+### 值得研究的方向
+
+**方向一：稳健 Fréchet Regression**
+
+如何在重尾数据下建立有限样本高概率保证？
+
+**方向二：非欧变量选择**
+
+当解释变量具有高维或流形结构时，如何选择重要变量？
+
+**方向三：Fréchet Regression Inference**
+
+如何构造适用于非欧响应的显著性检验和置信区域？
+
+这些问题在后续研究中已经得到部分推进，但仍存在值得研究的扩展方向。
+
+---
+
+# D. 今日总结
 
 ## D.1 三个核心收获
 
-**第一：** 数据所在空间的几何结构会直接影响统计方法的定义。
+**第一：** 非欧统计的出发点是数据所在空间，而不仅是统计公式本身。
 
-**第二：** Fréchet mean 通过距离最小化推广了普通样本均值。
+**第二：** Fréchet mean 通过平方距离最小化推广了普通均值。
 
-**第三：** 稳健局部 Fréchet 回归将几何结构、稳健估计与非渐近统计理论联系起来。
+**第三：** Fréchet Regression 进一步将条件平均和回归推广到一般度量空间值数据。
+
+---
 
 ## D.2 今日练习
 
-给定三个观测：
+考虑三个实数样本：
 
 ```math
 1,\quad3,\quad5
 ```
 
-求它们在欧氏距离下的 Fréchet mean。
+求其 Fréchet mean。
 
-**答案：**
+### 答案
+
+因为采用普通欧氏距离：
 
 ```math
-\hat\mu_F
-=
-\frac{1+3+5}{3}
-=
-3
+\hat\mu_F=\frac{1+3+5}{3}=3
 ```
 
 也可以通过最小化平方距离验证：
@@ -770,58 +844,39 @@ d_{\mathcal Y}
 
 ## D.3 下一期预告
 
-**第 002 期：距离、测地线与统计均值**
+### 第 002 期｜距离、测地线与非欧重心估计
 
-基础学习重点：
+重点学习：
 
-- 欧氏距离；
-- 球面测地距离；
-- 不同距离对统计均值的影响；
-- 测地线与流形统计的联系。
-
-前沿研究部分继续独立跟踪新方法和理论发展。
+- Euclidean Distance；
+- Geodesic Distance；
+- Geodesic Space；
+- CAT(0) 空间；
+- 曲率与 Fréchet mean 的唯一性；
+- 经验重心的有限样本误差界。
 
 ---
 
 # 参考文献
 
-## 基础文献
+1. Bhattacharya, R., & Patrangenaru, V. (2005). Large Sample Theory of Intrinsic and Extrinsic Sample Means on Manifolds—II. The Annals of Statistics, 33(3), 1225–1259.
 
-Petersen, A., & Müller, H.-G. (2019).
+   https://doi.org/10.1214/009053605000000093
 
-*Fréchet Regression for Random Objects with Euclidean Predictors.*
+2. Petersen, A., & Müller, H.-G. (2019). Fréchet Regression for Random Objects with Euclidean Predictors. The Annals of Statistics, 47(2), 691–719.
 
-The Annals of Statistics, 47(2), 691–719.
+   https://doi.org/10.1214/17-AOS1624
 
-https://doi.org/10.1214/17-AOS1624
+3. Dubey, P., & Müller, H.-G. (2019). Fréchet Analysis of Variance for Random Objects. Biometrika, 106(4), 803–821.
 
-## 本期重点精读
+   https://doi.org/10.1093/biomet/asz052
 
-Im, C. J., & Kurisu, D. (2026).
+4. Im, C. J., & Kurisu, D. (2026). Robust Local Fréchet Regression: Nonasymptotic Theory and Minimax Optimality. arXiv preprint.
 
-*Robust Local Fréchet Regression: Nonasymptotic Theory and Minimax Optimality.*
-
-https://arxiv.org/abs/2610.23757
-
-## 其他前沿文献
-
-1. Im, C. J. (2026). *Adaptive local Fréchet regression with polyspherical predictors.*  
-   https://arxiv.org/abs/2611.13240
-
-2. Meng, K., & Perez, C. (2026). *Principal Manifold Estimation with Riemannian Templates.*  
-   https://arxiv.org/abs/2604.04272
-
-3. Guan, J., Jiang, L., & Na, S. (2026). *Online Covariance Estimation for Averaged Stochastic Gradient Descent on Riemannian Manifolds.*  
-   https://arxiv.org/abs/2610.33419
-
-4. Peng, J., Stijven, F., Wang, L., & Gilbert, P. B. (2026). *Estimating the Wasserstein Barycenter of One-Dimensional Distributions Under Sparse Sampling.*  
-   https://arxiv.org/abs/2606.10096
-
-5. Song, W., Dubey, P., Müller, H.-G., & Petersen, A. (2026). *Inference for Fréchet Regression.*  
-   https://arxiv.org/abs/2605.19519
+   https://arxiv.org/abs/2610.23757
 
 ---
 
 **Non-Euclidean Statistics Learning Notes · Issue 001**
 
-*本系列用于非欧统计学知识学习与科研文献追踪。预印本结论以原始论文、适用假设及后续研究为准。*
+*修订版：优先选择正式发表的高质量研究；预印本单独标注，相关结论以原文及其假设为准。*
