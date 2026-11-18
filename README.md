@@ -29,6 +29,7 @@ non-euclidean-statistics-notes/
 └── issues/
     ├── 001-metric-spaces.md
     ├── 002-geodesic-distance.md
+    ├── 003-tangent-spaces.md
     └── ...
 ```
 
