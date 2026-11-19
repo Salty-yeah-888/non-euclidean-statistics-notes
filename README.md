@@ -30,6 +30,7 @@ non-euclidean-statistics-notes/
     ├── 001-metric-spaces.md
     ├── 002-geodesic-distance.md
     ├── 003-tangent-spaces.md
+    ├── 004-riemannian-metric-curvature-transport.md
     └── ...
 ```
 
