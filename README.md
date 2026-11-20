@@ -31,6 +31,10 @@ non-euclidean-statistics-notes/
     ├── 002-geodesic-distance.md
     ├── 003-tangent-spaces.md
     ├── 004-riemannian-metric-curvature-transport.md
+    ├── 005-riemannian-gradient-probability-optimization.md
+    ├──
+    ├──
+    ├──
     └── ...
 ```
 
