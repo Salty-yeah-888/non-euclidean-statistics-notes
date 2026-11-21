@@ -32,7 +32,7 @@ non-euclidean-statistics-notes/
     ├── 003-tangent-spaces.md
     ├── 004-riemannian-metric-curvature-transport.md
     ├── 005-riemannian-gradient-probability-optimization.md
-    ├──
+    ├── 006-wasserstein-space-barycenters.md
     ├──
     ├──
     └── ...
